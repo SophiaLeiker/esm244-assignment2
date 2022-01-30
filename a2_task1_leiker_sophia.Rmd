@@ -17,6 +17,11 @@ library(janitor)
 library(lubridate)
 library(patchwork)
 library(cowplot)
+library(GGally)
+library(broom)
+library(jtools)
+library(caret)
+library(AICcmodavg)
 ```
 
 
@@ -43,6 +48,78 @@ palmetto <- read_csv(here("data", "palmetto.csv")) %>%
 ```
 
 ***
+
+
+## 2. Data Exploration and Visualization
+
+- Exploring differences in height, canopy length, canopy width, and green leaves for the two species
+- `height` = maximum height 1981-2017 [cm]
+- `length` = widest length of the canopy 1981-2017 [cm]
+- `width` = widest width of the canopy perpendicular to the canopy length 1981-2017 [cm]
+- `green_lvs` = count of green leaves 1981-2017 [dimensionless]
+- Assessing what predictor variables might be best used for classification
+- `species` column: 1 = Serenoa repens, 2 = Sabal etonia
+
+### A. Cleaning up the data
+- Rename to easily identify Serenoa repens to Sabal etonia
+- Selecting only the columns of interest 
+
+```{r}
+palmetto_clean <- palmetto %>% 
+  select("species", "height", "length", "width", "green_lvs")
+
+palmetto_clean$species[palmetto_clean$species == 1] <- "repens"
+palmetto_clean$species[palmetto_clean$species == 2] <- "etonia"
+
+
+```
+
+```{r eval=FALSE}
+#Evaluating via ggpairs, eval = FALSE after visually assessing trends
+palmetto_clean %>% 
+  select(species, height:green_lvs) %>% 
+  ggpairs(aes(color=species))
+
+#seems like there are differences in green_lvs
+#slight difference in height and length
+#not much difference in width
+
+```
+
+```{r}
+ggplot(data = palmetto_clean, aes(x = length, y = width)) +
+  geom_point(aes(color = species)) +
+  theme_minimal() +
+  labs(x = "Length (cm)", y = "Width (cm)", title = "Length and Width for Serenoa repens vs Sabal etonia", subtitle = "Data from: Abrahamson, W.G. 2019")
+```
+
+**Figure 1**: ADD TEXT HERE
+
+```{r}
+ggplot(data = palmetto_clean, aes(x = height, y = green_lvs)) +
+  geom_point(aes(color = species)) +
+  theme_minimal() +
+  labs(x = "Height (cm)", y = "Green Leaves (count)", title = "Height and Green Leaves Count for Serenoa repens vs Sabal etonia", subtitle = "Data from: Abrahamson, W.G. 2019")
+
+```
+
+**Figure 2**: ADD TEXT HERE
+
+```{r}
+ggplot(data = palmetto_clean, aes(x = length, y = green_lvs)) +
+  geom_point(aes(color = species)) +
+  theme_minimal() +
+  labs(x = "Length (cm)", y = "Green Leaves (count)", title = "Length and Green Leaves Count for Serenoa repens vs Sabal etonia", subtitle = "Data from: Abrahamson, W.G. 2019")
+```
+
+**Figure 3**: ADD TEXT HERE
+
+A section containing 2 - 3 finalized (customized, suitable for a publication) data visualizations (with figure captions) in which you explore differences in height, canopy length, canopy width, and green leaves for the two species. If you prefer, combine the figures into a compound figure using {patchwork} or {cowplot}. Below your data visualizations, add a sentence or two with a takeaway from the plots, e.g., based on these plots, which predictor variables are more likely to help classify species correctly?
+
+
+
+
+
 
 ## X. Data Citation
 
