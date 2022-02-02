@@ -22,6 +22,7 @@ library(broom)
 library(jtools)
 library(caret)
 library(AICcmodavg)
+library(ggbeeswarm)
 ```
 
 
@@ -86,35 +87,124 @@ palmetto_clean %>%
 
 ```
 
+### B. Visualizing the Data
+
+- Exploring differences in height, canopy length, canopy width, and green leaves for the two species
+- Working to determine which predictor variables are more likely to help classify species correctly
+
+
+```{r}
+#Plotting Width
+plot1 <- ggplot(data = palmetto_clean, aes(x = species, y = width)) +
+  geom_beeswarm(cex = 2, aes(color = species)) +
+  theme_minimal() +
+  labs(x = "Species", y = "Width (cm)", title = "Canopy  Width S. repens, S. etonia", subtitle = "Data from: Abrahamson, W.G. 2019") +
+  guides(fill = guide_legend(title = "Species")) +
+  geom_boxplot(fill = NA, width = 0.4, outlier.color = NA) +
+    theme(axis.ticks.x = element_blank(),
+        axis.text.x = element_blank()) +
+   scale_color_manual(values = c("steelblue1", "tan1"))
+```
+
+```{r}
+#Plotting Height
+plot2 <- ggplot(data = palmetto_clean, aes(x = species, y = height)) +
+  geom_beeswarm(cex = 2, aes(color = species)) +
+  theme_minimal() +
+  labs(x = "Species", y = "Canopy Height (cm)", title = "Canopy Height S. repens, S. etonia", subtitle = "Data from: Abrahamson, W.G. 2019") +
+  guides(fill = guide_legend(title = "Species")) +
+  geom_boxplot(fill = NA, width = 0.4, outlier.color = NA) +
+    theme(axis.ticks.x = element_blank(),
+        axis.text.x = element_blank()) +
+   scale_color_manual(values = c("steelblue1", "tan1"))
+```
+
+```{r}
+#Plotting Length
+plot3 <- ggplot(data = palmetto_clean, aes(x = species, y = length)) +
+  geom_beeswarm(cex = 2, aes(color = species)) +
+  theme_minimal() +
+  labs(x = "Species", y = "Length (cm)", title = "Canopy Length S. repens, S. etonia", subtitle = "Data from: Abrahamson, W.G. 2019") +
+  guides(fill = guide_legend(title = "Species")) +
+  geom_boxplot(fill = NA, width = 0.4, outlier.color = NA) +
+  theme(axis.ticks.x = element_blank(),
+        axis.text.x = element_blank()) +
+  scale_color_manual(values = c("steelblue1", "tan1"))
+```
+
+**Visualizing Individual Variables Between Species** 
+```{r}
+plot_grid(plot1, plot2, plot3, labels = c("A.", "B.", "C."), label_size = 20)
+```
+
+**Figure 1**: Spread of individual data points for the variables width, height, and length for Serenoa repend (orange) vs Sabtal etonia (blue). A) Illustrates canopy width as the widest width of the canopy perpendicular to the canopy length 1981-2017 [cm] between the two species, B) Illustrates maximum height 1981-2017 [cm] between the two species. C) Illustrates widest length of the canopy 1981-2017 [cm]. Green leaf spread is analyzed below.
+
+**Visualizing Variable Relationships (multiple variables)**
+
 ```{r}
 ggplot(data = palmetto_clean, aes(x = length, y = width)) +
   geom_point(aes(color = species)) +
   theme_minimal() +
-  labs(x = "Length (cm)", y = "Width (cm)", title = "Length and Width for Serenoa repens vs Sabal etonia", subtitle = "Data from: Abrahamson, W.G. 2019")
+  labs(x = "Length (cm)", y = "Width (cm)", title = "Canopy Length and Width for Serenoa repens vs Sabal etonia", subtitle = "Data from: Abrahamson, W.G. 2019") +
+  scale_color_manual(values = c("steelblue1", "tan1"))
 ```
 
-**Figure 1**: ADD TEXT HERE
+**Figure 2**: Relationship between canopy length and canopy width for Serenoa repend (orange) vs Sabtal etonia (blue).
 
 ```{r}
 ggplot(data = palmetto_clean, aes(x = height, y = green_lvs)) +
   geom_point(aes(color = species)) +
   theme_minimal() +
-  labs(x = "Height (cm)", y = "Green Leaves (count)", title = "Height and Green Leaves Count for Serenoa repens vs Sabal etonia", subtitle = "Data from: Abrahamson, W.G. 2019")
+  labs(x = "Height (cm)", y = "Green Leaves (count)", title = "Canopy Height and Green Leaves Count for Serenoa repens vs Sabal etonia", subtitle = "Data from: Abrahamson, W.G. 2019") +
+  scale_color_manual(values = c("steelblue1", "tan1"))
 
 ```
 
-**Figure 2**: ADD TEXT HERE
+**Figure 3**: Relationship between canopy height and green leaves for Serenoa repend (orange) vs Sabtal etonia (blue).
 
 ```{r}
 ggplot(data = palmetto_clean, aes(x = length, y = green_lvs)) +
   geom_point(aes(color = species)) +
   theme_minimal() +
-  labs(x = "Length (cm)", y = "Green Leaves (count)", title = "Length and Green Leaves Count for Serenoa repens vs Sabal etonia", subtitle = "Data from: Abrahamson, W.G. 2019")
+  labs(x = "Length (cm)", y = "Green Leaves (count)", title = "Length and Green Leaves Count for Serenoa repens vs Sabal etonia", subtitle = "Data from: Abrahamson, W.G. 2019") +
+  scale_color_manual(values = c("steelblue1", "tan1"))
 ```
 
-**Figure 3**: ADD TEXT HERE
+**Figure 4**: Relationship between canopy length and green leaves for Serenoa repend (orange) vs Sabtal etonia (blue).
 
 A section containing 2 - 3 finalized (customized, suitable for a publication) data visualizations (with figure captions) in which you explore differences in height, canopy length, canopy width, and green leaves for the two species. If you prefer, combine the figures into a compound figure using {patchwork} or {cowplot}. Below your data visualizations, add a sentence or two with a takeaway from the plots, e.g., based on these plots, which predictor variables are more likely to help classify species correctly?
+
+**Overall Takeaways**: The variables that are most likely to help classify species seem to be first and most clearly, the leaf count, followed by height and then length, and lastly width. There seems to be significant overlap in canopy width which indicates that is may not be an ideal candidate to help separate out species. 
+
+***
+
+## 3. Binary Logistic Regression
+
+```{r}
+#Converting to factor
+
+palmetto_clean2<- palmetto %>% 
+  select("species", "height", "length", "width", "green_lvs")
+
+palmetto_clean2 <- as.factor(palmetto_clean2$species)
+#mutate species name = speciesname(as.factor)
+#case when 
+
+
+```
+
+
+### A. Log odds of plant type using plant height, canopy length, canopy width and green leaves as predictor variables
+
+
+```{r}
+
+```
+
+
+### B. Log odds of plant type using plant height, canopy width and green leaves
+
+
 
 
 
