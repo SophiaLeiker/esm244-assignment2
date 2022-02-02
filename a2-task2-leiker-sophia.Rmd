@@ -1,0 +1,70 @@
+---
+title: "Assignment 2: Task 2"
+author: "Sophia Leiker"
+date: "2/1/2022"
+output:   
+  html_document: 
+    toc: yes
+    code_folding: hide
+---
+
+```{r setup, include=TRUE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+library(tidyverse)
+library(here)
+library(janitor)
+library(lubridate)
+library(patchwork)
+library(cowplot)
+library(GGally)
+library(broom)
+library(jtools)
+library(caret)
+library(AICcmodavg)
+library(ggbeeswarm)
+```
+
+## 1. Introduction
+
+This report will employ non linear least squares to estimate parameters of a length to weight model for lizard populations in New Mexico. To do this the  snout length to weight model will be used. 
+
+
+**Data Source:** The data used comes from: [Lightfoot, D. and W.G. Whitford. 2020. Lizard pitfall trap data from 11 NPP study locations at the Jornada Basin LTER site, 1989-2006 ver 37. Environmental Data Initiative. ](https://doi.org/10.6073/pasta/4a6e258fb49c31e222ecbbcfd128967f) and metadata, including raw data and methods used for data collection can be found here [EDI Data Portal](https://portal.edirepository.org/nis/mapbrowse?packageid=knb-lter-jrn.210007001.37).
+
+This data package contains data on lizards sampled by pitfall traps located at 11 consumer plots at Jornada Basin LTER site from 1989-2006. Lizards were captured in pitfall traps at the 11 LTER II/III consumer plots (a subset of NPP plots) quarterly for 2 weeks per quarter. Variables measured include species, sex, recapture status, snout-vent length, total length, weight, and whether tail is broken or whole.
+
+
+
+```{r}
+# Reading in the data
+palmetto <- read_csv(here("data", "lizard.csv")) %>% 
+  clean_names()
+
+```
+
+***
+
+## 1. Fitting Snout Length to Weight Model
+
+### A. Strategies for Initial guesses 
+
+### B. Log Transform of data (OLS regression)
+
+### C. Supplying NLS Start list with regression coefficients
+
+***
+
+## 2. Final Model: Femal and Male Spcies
+
+
+***
+
+## 3. Filtering for male Western Whiptail lizard (Cnemidophorus tigrisatus) - Fit NLS Model
+
+
+
+## X. Data Citation
+
+Lightfoot, D. and W.G. Whitford. 2020. Lizard pitfall trap data from 11 NPP study locations at the Jornada Basin LTER site, 1989-2006 ver 37. Environmental Data Initiative. https://doi.org/10.6073/pasta/4a6e258fb49c31e222ecbbcfd128967f
+
