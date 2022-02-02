@@ -188,7 +188,8 @@ ggplot(data = palmetto_clean, aes(x = length, y = green_lvs)) +
 palmetto_clean2<- palmetto %>% 
   select("species", "height", "length", "width", "green_lvs") %>% 
   mutate(species = case_when(species == 1 ~ "repens", species == 2 ~ "etonia")) %>% 
-  mutate(species = as.factor(species))
+  mutate(species = as.factor(species)) %>% 
+  drop_na()
 
 
 levels(palmetto_clean2$species)
@@ -276,9 +277,14 @@ blr2_fitted <- species_blr2 %>%
 ### C. Comparing Models using AICc
 
 ```{r}
-AICcmodavg::aictab(list(species_blr1, species_blr2))
+AIC_assessment <- AICcmodavg::aictab(list(species_blr1, species_blr2))
+AIC_assessment
 ```
 
+According to this AICc calculation, model 1 has a lower value for AIC so just based on the AICc, we might anticipate that model 1 will be the better model.
+
+- AICc for **Model 1** is `r AIC_assessment[1,3]`
+- AICc for **Model 2** is `r AIC_assessment[2,3]`
 
 ```{r}
 set.seed(123) 
@@ -289,14 +295,23 @@ tr_ctrl <- trainControl(method = "repeatedcv", number = 10, repeats = 10)
 model1_height_length_width_green_lvs <- train(f1, data = palmetto_clean2, 
                method = "glm", family = 'binomial',
                trControl = tr_ctrl)
+
 model1_height_length_width_green_lvs
+
+#model 1  accuracy 0.9169231  kappa 0.8338335
  
 model2_height_width_green_lvs <- train(f2, data = palmetto_clean2, 
                method = "glm", family = 'binomial',
                trControl = tr_ctrl)
+
 model2_height_width_green_lvs
+
+#model 2   accuracy 0.8988022  kappa 0.7975858
+
+#Since the accuracy of model 1 is higher, we may be able to state that model 1 is the better performing model
 ```
 
+Based on the accuracy results of the corss validation, Model 1 (height, length, width, green_lvs) has a higher accuracy than Model 2 (height, width, green_lvs) and therefore it can be said that model 1 performs better at classification. This aligns with the AIC assessment carried out above. 
 
 
 
