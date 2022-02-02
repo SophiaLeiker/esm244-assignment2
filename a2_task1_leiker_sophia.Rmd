@@ -172,37 +172,134 @@ ggplot(data = palmetto_clean, aes(x = length, y = green_lvs)) +
 
 **Figure 4**: Relationship between canopy length and green leaves for Serenoa repend (orange) vs Sabtal etonia (blue).
 
-A section containing 2 - 3 finalized (customized, suitable for a publication) data visualizations (with figure captions) in which you explore differences in height, canopy length, canopy width, and green leaves for the two species. If you prefer, combine the figures into a compound figure using {patchwork} or {cowplot}. Below your data visualizations, add a sentence or two with a takeaway from the plots, e.g., based on these plots, which predictor variables are more likely to help classify species correctly?
 
-**Overall Takeaways**: The variables that are most likely to help classify species seem to be first and most clearly, the leaf count, followed by height and then length, and lastly width. There seems to be significant overlap in canopy width which indicates that is may not be an ideal candidate to help separate out species. 
+**Overall Takeaways**: The variables that are most likely to help classify species seem to be first and most clearly, the leaf count, followed by height and then length, and lastly width. There seems to be significant overlap in canopy width which indicates that is may not be an ideal candidate to help separate out species. Canopy height and length differ on the upper end of the scale (higher values), but have significant overlap near lower values. Leaf count visually reflects the largest difference between the two species and thus could be the most likely to help classify Serenoa repend  vs Sabtal etonia (blue) most clearly. 
 
 ***
 
 ## 3. Binary Logistic Regression
 
+- Converting to factors
+- Establishing the factor levels, due to the result below it can be determined that "etonia" will be 0, "repens" will be 1
+
 ```{r}
 #Converting to factor
 
 palmetto_clean2<- palmetto %>% 
-  select("species", "height", "length", "width", "green_lvs")
-
-palmetto_clean2 <- as.factor(palmetto_clean2$species)
-#mutate species name = speciesname(as.factor)
-#case when 
+  select("species", "height", "length", "width", "green_lvs") %>% 
+  mutate(species = case_when(species == 1 ~ "repens", species == 2 ~ "etonia")) %>% 
+  mutate(species = as.factor(species))
 
 
+levels(palmetto_clean2$species)
+# this means that "etonia" will be 0, "repens" will be 1 for levels
 ```
 
 
 ### A. Log odds of plant type using plant height, canopy length, canopy width and green leaves as predictor variables
 
+- Establishing model
 
 ```{r}
+f1 <- species ~ height + length + width + green_lvs
 
+#Generalized Linear Model
+
+species_blr1 <- glm(formula = f1,
+                    data = palmetto_clean2,
+                    family = "binomial")
 ```
+
+Let's look at the results
+ - Based on the summary output, all 4 of the variables have low p values which may indicate that they may be significant
+ - Interpretation of some coefficients: since green leaves is positive, we could estimate that for every 1.9 additional green leaves it makes it a little more likely that it is a repens.
+```{r}
+#species_blr1
+
+summary(species_blr1)
+
+blr1_tidy <- broom::tidy(species_blr1)
+```
+
+- These are coefficients for the log-linear model (e.g. these are coefficients for the predictor variables that relate to the *log odds* of the "Serenoa repend" outcome).
+- It took 7 iterations to reach this model outcome
+
+
+```{r}
+blr1_fitted <- species_blr1 %>% 
+  broom::augment(type.predict = "response")
+```
+
+That shows us the probability (in the `.fitted` column) of the plant being a Serenoa repend on the 4 variables included in this model.
+
+```{r}
+ggplot(data = blr1_fitted, aes(x = green_lvs, y = .fitted)) +
+  geom_point(aes(color = species)) +
+  geom_smooth(aes(color = species), se = FALSE) +
+  labs(x = "Green Leaves Count",
+   	   y = "Probability of outcome Serenoa repend")
+```
+
+**Figure 5**: Exploratory Plot to visualize the current outcome for Probability of Serenoa repends with Green Leaves Count
 
 
 ### B. Log odds of plant type using plant height, canopy width and green leaves
+
+```{r}
+f2 <- species ~ height + width + green_lvs
+
+#Generalized Linear Model
+
+species_blr2 <- glm(formula = f2,
+                    data = palmetto_clean2,
+                    family = "binomial")
+```
+
+Let's look at the results
+ - Based on the summary output, width and green leaves have low p values which may indicate that they may be significant
+ - Height has a higher p values which may indicate it is not as significant for this model
+```{r}
+#species_blr2
+
+summary(species_blr2)
+
+blr2_tidy <- broom::tidy(species_blr2)
+```
+
+
+```{r}
+blr2_fitted <- species_blr2 %>% 
+  broom::augment(type.predict = "response")
+```
+
+
+### C. Comparing Models using AICc
+
+```{r}
+AICcmodavg::aictab(list(species_blr1, species_blr2))
+```
+
+
+```{r}
+set.seed(123) 
+tr_ctrl <- trainControl(method = "repeatedcv", number = 10, repeats = 10)
+ 
+# Train the model
+#Formula f1, data frame, method is the generalized linear model
+model1_height_length_width_green_lvs <- train(f1, data = palmetto_clean2, 
+               method = "glm", family = 'binomial',
+               trControl = tr_ctrl)
+model1_height_length_width_green_lvs
+ 
+model2_height_width_green_lvs <- train(f2, data = palmetto_clean2, 
+               method = "glm", family = 'binomial',
+               trControl = tr_ctrl)
+model2_height_width_green_lvs
+```
+
+
+
+
 
 
 
