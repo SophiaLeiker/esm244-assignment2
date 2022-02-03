@@ -14,7 +14,6 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 library(tidyverse)
 library(here)
 library(janitor)
-library(lubridate)
 library(patchwork)
 library(cowplot)
 library(GGally)
@@ -23,6 +22,9 @@ library(jtools)
 library(caret)
 library(AICcmodavg)
 library(ggbeeswarm)
+library(stargazer)
+library(kableExtra)
+library(modelsummary)
 ```
 
 
@@ -104,9 +106,7 @@ plot1 <- ggplot(data = palmetto_clean, aes(x = species, y = width)) +
     theme(axis.ticks.x = element_blank(),
         axis.text.x = element_blank()) +
    scale_color_manual(values = c("steelblue1", "tan1"))
-```
 
-```{r}
 #Plotting Height
 plot2 <- ggplot(data = palmetto_clean, aes(x = species, y = height)) +
   geom_beeswarm(cex = 2, aes(color = species)) +
@@ -117,9 +117,7 @@ plot2 <- ggplot(data = palmetto_clean, aes(x = species, y = height)) +
     theme(axis.ticks.x = element_blank(),
         axis.text.x = element_blank()) +
    scale_color_manual(values = c("steelblue1", "tan1"))
-```
 
-```{r}
 #Plotting Length
 plot3 <- ggplot(data = palmetto_clean, aes(x = species, y = length)) +
   geom_beeswarm(cex = 2, aes(color = species)) +
@@ -132,14 +130,18 @@ plot3 <- ggplot(data = palmetto_clean, aes(x = species, y = length)) +
   scale_color_manual(values = c("steelblue1", "tan1"))
 ```
 
-**Visualizing Individual Variables Between Species** 
+
+#### Visualizing Individual Variables Between Species
 ```{r}
 plot_grid(plot1, plot2, plot3, labels = c("A.", "B.", "C."), label_size = 20)
 ```
 
 **Figure 1**: Spread of individual data points for the variables width, height, and length for Serenoa repend (orange) vs Sabtal etonia (blue). A) Illustrates canopy width as the widest width of the canopy perpendicular to the canopy length 1981-2017 [cm] between the two species, B) Illustrates maximum height 1981-2017 [cm] between the two species. C) Illustrates widest length of the canopy 1981-2017 [cm]. Green leaf spread is analyzed below.
 
-**Visualizing Variable Relationships (multiple variables)**
+**Takeaways** In general, there seems to be significant overlap in the spread of the `width` values across the dataset as seen in Figure 1 Part A. Canopy `height` in Figure 1 Part B illustrates that at the upper and lower ends of the height range, S. repends tends to stand out thus at these points there may be some power in incorporating this variable in analysis. Canopy `length` has similar trends to canopy `width` and thus with significant overlap may not provide as much explanatory power in differentiating the two species. 
+
+
+#### Visualizing Variable Relationships (multiple variables)
 
 ```{r}
 ggplot(data = palmetto_clean, aes(x = length, y = width)) +
@@ -173,7 +175,7 @@ ggplot(data = palmetto_clean, aes(x = length, y = green_lvs)) +
 **Figure 4**: Relationship between canopy length and green leaves for Serenoa repend (orange) vs Sabtal etonia (blue).
 
 
-**Overall Takeaways**: The variables that are most likely to help classify species seem to be first and most clearly, the leaf count, followed by height and then length, and lastly width. There seems to be significant overlap in canopy width which indicates that is may not be an ideal candidate to help separate out species. Canopy height and length differ on the upper end of the scale (higher values), but have significant overlap near lower values. Leaf count visually reflects the largest difference between the two species and thus could be the most likely to help classify Serenoa repend  vs Sabtal etonia (blue) most clearly. 
+**Overall Takeaways**: The variables that are most likely to help classify species seem to be first and most clearly, the `leaf count`, followed by `height` and then `length`, and lastly `width`. There seems to be significant overlap in canopy width which indicates that is may not be an ideal candidate to help separate out species. Canopy height and length differ on the upper end of the scale (higher values), but have significant overlap near lower values. Leaf count visually reflects the largest difference between the two species and thus could be the most likely to help classify Serenoa repend  vs Sabtal etonia (blue) most clearly. 
 
 ***
 
@@ -193,15 +195,14 @@ palmetto_clean2<- palmetto %>%
 
 
 levels(palmetto_clean2$species)
-# this means that "etonia" will be 0, "repens" will be 1 for levels
 ```
 
 
 ### A. Log odds of plant type using plant height, canopy length, canopy width and green leaves as predictor variables
 
-- Establishing model
 
 ```{r}
+#establishing the relationships
 f1 <- species ~ height + length + width + green_lvs
 
 #Generalized Linear Model
@@ -212,6 +213,7 @@ species_blr1 <- glm(formula = f1,
 ```
 
 Let's look at the results
+
  - Based on the summary output, all 4 of the variables have low p values which may indicate that they may be significant
  - Interpretation of some coefficients: since green leaves is positive, we could estimate that for every 1.9 additional green leaves it makes it a little more likely that it is a repens.
 ```{r}
@@ -226,20 +228,6 @@ blr1_tidy <- broom::tidy(species_blr1)
 - It took 7 iterations to reach this model outcome
 
 
-```{r}
-blr1_fitted <- species_blr1 %>% 
-  broom::augment(type.predict = "response")
-```
-
-That shows us the probability (in the `.fitted` column) of the plant being a Serenoa repend on the 4 variables included in this model.
-
-```{r}
-ggplot(data = blr1_fitted, aes(x = green_lvs, y = .fitted)) +
-  geom_point(aes(color = species)) +
-  geom_smooth(aes(color = species), se = FALSE) +
-  labs(x = "Green Leaves Count",
-   	   y = "Probability of outcome Serenoa repend")
-```
 
 **Figure 5**: Exploratory Plot to visualize the current outcome for Probability of Serenoa repends with Green Leaves Count
 
@@ -257,6 +245,7 @@ species_blr2 <- glm(formula = f2,
 ```
 
 Let's look at the results
+
  - Based on the summary output, width and green leaves have low p values which may indicate that they may be significant
  - Height has a higher p values which may indicate it is not as significant for this model
 ```{r}
@@ -278,13 +267,14 @@ blr2_fitted <- species_blr2 %>%
 
 ```{r}
 AIC_assessment <- AICcmodavg::aictab(list(species_blr1, species_blr2))
-AIC_assessment
 ```
 
-According to this AICc calculation, model 1 has a lower value for AIC so just based on the AICc, we might anticipate that model 1 will be the better model.
+- AICc for **Model 1** (plant height, canopy length, canopy width and green leaves) is `r round(AIC_assessment[1,3],2)`
+- AICc for **Model 2** (plant height, canopy width and green leaves) is `r round(AIC_assessment[2,3],2)`
 
-- AICc for **Model 1** is `r AIC_assessment[1,3]`
-- AICc for **Model 2** is `r AIC_assessment[2,3]`
+According to this AICc calculation, Model 1 has a lower value for AICc so just based on the AICc, we might anticipate that model 1 will be the better model.
+
+### D. Comparing Model 1 and Model 2 using Ten-fold cross validation
 
 ```{r}
 set.seed(123) 
@@ -296,22 +286,63 @@ model1_height_length_width_green_lvs <- train(f1, data = palmetto_clean2,
                method = "glm", family = 'binomial',
                trControl = tr_ctrl)
 
-model1_height_length_width_green_lvs
-
 #model 1  accuracy 0.9169231  kappa 0.8338335
  
 model2_height_width_green_lvs <- train(f2, data = palmetto_clean2, 
                method = "glm", family = 'binomial',
                trControl = tr_ctrl)
 
-model2_height_width_green_lvs
-
 #model 2   accuracy 0.8988022  kappa 0.7975858
+
+
+summary(model1_height_length_width_green_lvs)
+summary(model2_height_width_green_lvs)
 
 #Since the accuracy of model 1 is higher, we may be able to state that model 1 is the better performing model
 ```
 
-Based on the accuracy results of the corss validation, Model 1 (height, length, width, green_lvs) has a higher accuracy than Model 2 (height, width, green_lvs) and therefore it can be said that model 1 performs better at classification. This aligns with the AIC assessment carried out above. 
+**Takeaways** : Based on the accuracy results of the corss validation, Model 1 (height, length, width, green_lvs) has a higher accuracy than Model 2 (height, width, green_lvs) and therefore it can be said that model 1 performs better at classification. This aligns with the AICc assessment carried out above. 
+
+For this reason, Model 1 will be selected to run on the entire dataset. 
+
+## 3. Running Model 1 (Variables included: `height`, `length`, `width`, `green_lvs`) on entire dataset
+
+```{r}
+final_model <- glm(formula = f1,
+                    data = palmetto_clean2,
+                    family = "binomial")
+```
+
+**Table 1** Binary Logistic Regression Model Outputs Showing the Variables, Coefficients, Standard Errors
+```{r }
+final_table <- tidy(final_model) %>% 
+  mutate(p.value = case_when(p.value <= 0.0001 ~ "< 0.0001")) %>% 
+  rename("Term" = "term")
+
+final_table %>% 
+  kbl() %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"))
+```
+
+**Final Model Equation**:
+`r equatiomatic::extract_eq(final_model, wrap = TRUE, use_coefs = TRUE)`
+
+## 3. Model Evaluation
+
+- Analyzing how successfully this model would “classify” a plant as the correct species, using a 50% cutoff 
+
+```{r}
+blr_fitted <- final_model %>% 
+  broom::augment(type.predict = "response")
+
+#That shows us the probability (in the `.fitted` column) of the plant being a Serenoa repend on the 4 variables included in this model.
+```
+
+
+
+```{r}
+
+```
 
 
 
