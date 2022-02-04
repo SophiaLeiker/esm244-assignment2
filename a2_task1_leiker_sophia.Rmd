@@ -229,9 +229,6 @@ blr1_tidy <- broom::tidy(species_blr1)
 
 
 
-**Figure 5**: Exploratory Plot to visualize the current outcome for Probability of Serenoa repends with Green Leaves Count
-
-
 ### B. Log odds of plant type using plant height, canopy width and green leaves
 
 ```{r}
@@ -327,7 +324,7 @@ final_table %>%
 **Final Model Equation**:
 `r equatiomatic::extract_eq(final_model, wrap = TRUE, use_coefs = TRUE)`
 
-## 3. Model Evaluation
+## 4. Model Evaluation
 
 - Analyzing how successfully this model would “classify” a plant as the correct species, using a 50% cutoff 
 
@@ -339,8 +336,31 @@ blr_fitted <- final_model %>%
 ```
 
 
+```{r}
+#creating a function
+pred_acc <- function(x, y) {
+  accurate <- ifelse(x == y, 1, 0)
+  return(mean(accurate, na.rm = TRUE))
+}
+
+#final_model Serenoa repend (orange) vs Sabtal etonia (blue)
+#Adelie will be 0, Chinstrap will be 1)
+#"etonia" will be 0, "repens" will be 1
+
+model_success <- palmetto_clean2 %>% 
+  mutate(predict_repens = predict(final_model, palmetto_clean2, type = "response")) %>% 
+  mutate(predicted = ifelse(predict_repens >= 0.50, "repens", "etonia")) %>%
+  mutate(accurate = pred_acc(species, predicted)) %>% 
+  mutate(correct =  case_when(species == predicted ~ "Correct",
+                              TRUE ~ "Incorrect"))
+
+model_success %>%
+  summarize(model_success = mean(accurate))
+```
 
 ```{r}
+#making a kable table for the output
+
 
 ```
 

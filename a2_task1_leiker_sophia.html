@@ -200,7 +200,7 @@ pre code {
 <li><a href="#d.-comparing-model-1-and-model-2-using-ten-fold-cross-validation">D. Comparing Model 1 and Model 2 using Ten-fold cross validation</a></li>
 </ul></li>
 <li><a href="#running-model-1-variables-included-height-length-width-green_lvs-on-entire-dataset">3. Running Model 1 (Variables included: <code>height</code>, <code>length</code>, <code>width</code>, <code>green_lvs</code>) on entire dataset</a></li>
-<li><a href="#model-evaluation">3. Model Evaluation</a></li>
+<li><a href="#model-evaluation">4. Model Evaluation</a></li>
 <li><a href="#x.-data-citation">X. Data Citation</a></li>
 </ul>
 </div>
@@ -404,7 +404,6 @@ summary(species_blr1)</code></pre>
 <li>These are coefficients for the log-linear model (e.g. these are coefficients for the predictor variables that relate to the <em>log odds</em> of the “Serenoa repend” outcome).</li>
 <li>It took 7 iterations to reach this model outcome</li>
 </ul>
-<p><strong>Figure 5</strong>: Exploratory Plot to visualize the current outcome for Probability of Serenoa repends with Green Leaves Count</p>
 </div>
 <div id="b.-log-odds-of-plant-type-using-plant-height-canopy-width-and-green-leaves" class="section level3">
 <h3>B. Log odds of plant type using plant height, canopy width and green leaves</h3>
@@ -665,7 +664,7 @@ green_lvs
 \]</span></p>
 </div>
 <div id="model-evaluation" class="section level2">
-<h2>3. Model Evaluation</h2>
+<h2>4. Model Evaluation</h2>
 <ul>
 <li>Analyzing how successfully this model would “classify” a plant as the correct species, using a 50% cutoff</li>
 </ul>
@@ -673,6 +672,30 @@ green_lvs
   broom::augment(type.predict = &quot;response&quot;)
 
 #That shows us the probability (in the `.fitted` column) of the plant being a Serenoa repend on the 4 variables included in this model.</code></pre>
+<pre class="r"><code>#creating a function
+pred_acc &lt;- function(x, y) {
+  accurate &lt;- ifelse(x == y, 1, 0)
+  return(mean(accurate, na.rm = TRUE))
+}
+
+#final_model Serenoa repend (orange) vs Sabtal etonia (blue)
+#Adelie will be 0, Chinstrap will be 1)
+#&quot;etonia&quot; will be 0, &quot;repens&quot; will be 1
+
+model_success &lt;- palmetto_clean2 %&gt;% 
+  mutate(predict_repens = predict(final_model, palmetto_clean2, type = &quot;response&quot;)) %&gt;% 
+  mutate(predicted = ifelse(predict_repens &gt;= 0.50, &quot;repens&quot;, &quot;etonia&quot;)) %&gt;%
+  mutate(accurate = pred_acc(species, predicted)) %&gt;% 
+  mutate(correct =  case_when(species == predicted ~ &quot;Correct&quot;,
+                              TRUE ~ &quot;Incorrect&quot;))
+
+model_success %&gt;%
+  summarize(model_success = mean(accurate))</code></pre>
+<pre><code>## # A tibble: 1 × 1
+##   model_success
+##           &lt;dbl&gt;
+## 1         0.917</code></pre>
+<pre class="r"><code>#making a kable table for the output</code></pre>
 </div>
 <div id="x.-data-citation" class="section level2">
 <h2>X. Data Citation</h2>
