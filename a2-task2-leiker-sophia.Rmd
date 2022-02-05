@@ -39,7 +39,9 @@ This data package contains data on lizards sampled by pitfall traps located at 1
 ```{r}
 # Reading in the data
 palmetto <- read_csv(here("data", "lizard.csv")) %>% 
-  clean_names()
+  clean_names() %>% 
+  drop_na()
+  
 
 ```
 
@@ -47,15 +49,69 @@ palmetto <- read_csv(here("data", "lizard.csv")) %>%
 
 ## 1. Fitting Snout Length to Weight Model
 
-### A. Strategies for Initial guesses 
+**Equation**
+\[W = a(SVL)^b\]
 
-### B. Log Transform of data (OLS regression)
+- Where `W` is the Body weight (g), `SVL` is snout to vent length (mm).
+- `a` and `b` are parameters which need to be fitted
 
-### C. Supplying NLS Start list with regression coefficients
+### A. Log Transform of data & Running Guess Model
+```{r}
+# Since the my_guess_model has things in logs, need to log transform to create new columns
+palmetto_log <- palmetto %>% 
+  mutate(log_weight = log(weight)) %>% 
+  mutate(log_length = log(sv_length))
+```
+
+Running linear model
+```{r}
+my_guess_model <- lm(log_weight ~ log_length, data = palmetto_log) 
+```
+
+### B. Supplying NLS Start list with regression coefficients
+
+Pulling out the coefficients from my_guess_model
+
+- Using `coefficients` function
+```{r}
+coef <- coefficients(my_guess_model)
+
+#Cleaning up the model so I can pull out the coefficients easier 
+my_guess_model_clean <- tidy(my_guess_model)
+```
+**Coefficient Output**
+
+- The intercept of `my_guess_model` is `r round(my_guess_model_clean$estimate[1],3)`
+- The log_length of `my_guess_model` is `r round(my_guess_model_clean$estimate[2],3)`
+
+
+Creating a function for the equation listed
+- Inputs are a, sv_length, b (a and b are coefficients)
+```{r}
+weight_function<-function(a,sv_length,b){
+ weight= a*(sv_length)^b
+return(weight)
+}
+```
+
 
 ***
 
-## 2. Final Model: Femal and Male Spcies
+## 2. Final Model: Female and Male Spcies by Color
+
+- Using `nls` and feeding in our coefficients as a starting off point
+- Using original `palmetto` dataset
+
+```{r}
+
+palmetto_nls <- nls(weight ~ weight_function(a,sv_length,b),
+                    data = palmetto,
+                    start = list(b = coef[2],
+                                 a = exp(coef[1])))
+
+```
+
+
 
 
 ***
