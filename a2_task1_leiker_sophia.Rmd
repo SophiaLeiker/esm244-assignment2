@@ -1,5 +1,6 @@
 ---
 title: "Assignment 2: Task 1"
+subtitle: "Palmetto Binary Logistic Regression"
 author: "Sophia Leiker"
 date: "1/30/2022"
 output: 
@@ -105,7 +106,10 @@ plot1 <- ggplot(data = palmetto_clean, aes(x = species, y = width)) +
   geom_boxplot(fill = NA, width = 0.4, outlier.color = NA) +
     theme(axis.ticks.x = element_blank(),
         axis.text.x = element_blank()) +
-   scale_color_manual(values = c("steelblue1", "tan1"))
+   scale_color_manual(values = c("steelblue1", "tan1")) +
+  theme(legend.position = c(0.9, 0.75)) +
+    theme(legend.background = element_rect(fill="white", 
+                                  size=0, linetype="solid"))
 
 #Plotting Height
 plot2 <- ggplot(data = palmetto_clean, aes(x = species, y = height)) +
@@ -116,7 +120,10 @@ plot2 <- ggplot(data = palmetto_clean, aes(x = species, y = height)) +
   geom_boxplot(fill = NA, width = 0.4, outlier.color = NA) +
     theme(axis.ticks.x = element_blank(),
         axis.text.x = element_blank()) +
-   scale_color_manual(values = c("steelblue1", "tan1"))
+   scale_color_manual(values = c("steelblue1", "tan1")) +
+  theme(legend.position = c(0.9, 0.80)) +
+  theme(legend.background = element_rect(fill="white", 
+                                  size=0, linetype="solid"))
 
 #Plotting Length
 plot3 <- ggplot(data = palmetto_clean, aes(x = species, y = length)) +
@@ -127,18 +134,23 @@ plot3 <- ggplot(data = palmetto_clean, aes(x = species, y = length)) +
   geom_boxplot(fill = NA, width = 0.4, outlier.color = NA) +
   theme(axis.ticks.x = element_blank(),
         axis.text.x = element_blank()) +
-  scale_color_manual(values = c("steelblue1", "tan1"))
+  scale_color_manual(values = c("steelblue1", "tan1")) +
+  theme(legend.position = c(0.9, 0.82)) +
+  theme(legend.background = element_rect(fill="white", 
+                                  size=0, linetype="solid"))
 ```
 
 
 #### Visualizing Individual Variables Between Species
+
+- Results from this initial assessment will be used to plot final visualizations comparing variables to eachother by species (see Figures 2,3 and 4 for finalized assessments)
 ```{r}
 plot_grid(plot1, plot2, plot3, labels = c("A.", "B.", "C."), label_size = 20)
 ```
 
-**Figure 1**: Spread of individual data points for the variables width, height, and length for Serenoa repend (orange) vs Sabtal etonia (blue). A) Illustrates canopy width as the widest width of the canopy perpendicular to the canopy length 1981-2017 [cm] between the two species, B) Illustrates maximum height 1981-2017 [cm] between the two species. C) Illustrates widest length of the canopy 1981-2017 [cm]. Green leaf spread is analyzed below.
+**Figure 1**: Spread of individual data points for the variables width, height, and length for Serenoa repend (orange) vs Sabtal etonia (blue). A) Illustrates canopy width as the widest width of the canopy perpendicular to the canopy length 1981-2017 [cm] between the two species, B) Illustrates maximum height 1981-2017 [cm] between the two species. C) Illustrates widest length of the canopy 1981-2017 [cm]. Green leaf spread is analyzed below.The box plots in black indicate the 25th and 75th percentile values of the data spread, the black line indicates the median value.
 
-**Takeaways** In general, there seems to be significant overlap in the spread of the `width` values across the dataset as seen in Figure 1 Part A. Canopy `height` in Figure 1 Part B illustrates that at the upper and lower ends of the height range, S. repends tends to stand out thus at these points there may be some power in incorporating this variable in analysis. Canopy `length` has similar trends to canopy `width` and thus with significant overlap may not provide as much explanatory power in differentiating the two species. 
+**Takeaways** In general, there seems to be significant overlap in the spread of the `width` values across the dataset as seen in Figure 1 Part A. Canopy `height` in Figure 1 Part B illustrates that at the upper and lower ends of the height range, S. repends tends to stand out thus at these points there may be some power in incorporating this variable in analysis. Canopy `length` has similar trends to canopy `width` and thus with significant overlap may not provide as much explanatory power in differentiating the two species except at the higher values or when length is around 50cm - 100cm (at these points there seems to be more datapoints for the Serenoa repends (orange))
 
 
 #### Visualizing Variable Relationships (multiple variables)
@@ -282,18 +294,14 @@ tr_ctrl <- trainControl(method = "repeatedcv", number = 10, repeats = 10)
 model1_height_length_width_green_lvs <- train(f1, data = palmetto_clean2, 
                method = "glm", family = 'binomial',
                trControl = tr_ctrl)
-
+#summary(model1_height_length_width_green_lvs)
 #model 1  accuracy 0.9169231  kappa 0.8338335
  
 model2_height_width_green_lvs <- train(f2, data = palmetto_clean2, 
                method = "glm", family = 'binomial',
                trControl = tr_ctrl)
-
+#summary(model2_height_width_green_lvs)
 #model 2   accuracy 0.8988022  kappa 0.7975858
-
-
-summary(model1_height_length_width_green_lvs)
-summary(model2_height_width_green_lvs)
 
 #Since the accuracy of model 1 is higher, we may be able to state that model 1 is the better performing model
 ```
