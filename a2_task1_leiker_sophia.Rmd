@@ -302,7 +302,9 @@ summary(model2_height_width_green_lvs)
 
 For this reason, Model 1 will be selected to run on the entire dataset. 
 
-## 3. Running Model 1 (Variables included: `height`, `length`, `width`, `green_lvs`) on entire dataset
+***
+
+## 4. Running Model 1 (Variables included: `height`, `length`, `width`, `green_lvs`) on entire dataset
 
 ```{r}
 final_model <- glm(formula = f1,
@@ -310,21 +312,21 @@ final_model <- glm(formula = f1,
                     family = "binomial")
 ```
 
-**Table 1** Binary Logistic Regression Model Outputs Showing the Variables, Coefficients, Standard Errors
+
 ```{r }
 final_table <- tidy(final_model) %>% 
   mutate(p.value = case_when(p.value <= 0.0001 ~ "< 0.0001")) %>% 
   rename("Term" = "term")
 
 final_table %>% 
-  kbl(digits = 3) %>% 
-  kable_styling(bootstrap_options = c("striped", "hover"))
+  kbl(digits = 3, caption = "Table 1: Binary Logistic Regression Model Outputs Showing the Variables, Coefficients, Standard Errors", col.names = c("Term", "Estimate", "Standard Error", "Statistic", "P Value")) %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F)
 ```
 
 **Final Model Equation**:
 `r equatiomatic::extract_eq(final_model, wrap = TRUE, use_coefs = TRUE)`
 
-## 4. Model Evaluation
+## 5. Model Evaluation
 
 - Analyzing how successfully this model would “classify” a plant as the correct species, using a 50% cutoff 
 
@@ -354,33 +356,24 @@ model_success <- palmetto_clean2 %>%
   mutate(correct =  case_when(species == predicted ~ "Correct",
                               TRUE ~ "Incorrect"))
 
-model_success %>%
+table2 <- model_success %>%
   group_by(species) %>% 
-  summarize(model_success = mean(accurate)) %>% 
-  summarize(m)
-#total observations is the n() (since it is after the group function it is already parsed out)
-#correctly classified is total
-#correct 
+  summarize(total_accurate = sum(accurate),
+            total_inaccurate = n() - sum(accurate),
+            model_success = mean(accurate)*100)
 
-
-```
-
-```{r}
-#making a kable table for the output
-
+table2 %>% 
+  kbl(digits = 2, caption = "Table 2: Model Accuracy by Species", col.names = c("Species", "Total Accurate", "Total Inaccurate", "% Correctly Classified")) %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F)
 
 ```
 
+**CONCLUSIONS**: Based on the model success metrics, one can see that on average the model was predicting correctly about 90% of the time. The model was slightly more accurate when predicting Sabtal etonia compared to Serenoa repend, but the difference was only around 2%. 
 
+***
 
-
-
-
-
-
-
-
-
-## X. Data Citation
+## 6. Data Citation
 
 Data source: Abrahamson, W.G. 2019. Survival, growth and biomass estimates of two dominant palmetto species of south-central Florida from 1981 - 2017, ongoing at 5-year intervals ver 1. Environmental Data Initiative. https://doi.org/10.6073/pasta/f2f96ec76fbbd4b9db431c79a770c4d5
+
+## END TASK

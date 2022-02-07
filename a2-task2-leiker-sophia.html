@@ -225,7 +225,9 @@ library(modelr)</code></pre>
 <pre class="r"><code># Reading in the data
 palmetto &lt;- read_csv(here(&quot;data&quot;, &quot;lizard.csv&quot;)) %&gt;% 
   clean_names() %&gt;% 
-  drop_na() </code></pre>
+  drop_na() 
+  
+#palmetto naming convention was wrong, too far into the code to change when this was realized</code></pre>
 <hr />
 </div>
 <div id="fitting-snout-length-to-weight-model" class="section level2">
@@ -280,13 +282,15 @@ return(weight)
 
 #Cleaning up to create nice output
 palmetto_nls_tidy &lt;- tidy(palmetto_nls)</code></pre>
-<p><strong>Table 1</strong>: NLS Model Results</p>
 <pre class="r"><code>#Making a table with outputs
 palmetto_nls_tidy %&gt;% mutate(p.value = case_when(p.value &lt; 0.001 ~ &quot;&lt;0.001&quot;)) %&gt;% 
-  kable(col.names = c(&quot;Term&quot;, &quot;Coefficient&quot;, &quot;Standard Error&quot;, &quot;Statistic&quot;, &quot;P Value&quot;), digits = 4) %&gt;% 
+  kable(col.names = c(&quot;Term&quot;, &quot;Coefficient&quot;, &quot;Standard Error&quot;, &quot;Statistic&quot;, &quot;P Value&quot;), digits = 4, caption = &quot;Table 1: NLS Model Results&quot;) %&gt;% 
   kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;)) %&gt;% 
   kable_styling(full_width = FALSE)</code></pre>
 <table class="table table-striped table-hover table" style="margin-left: auto; margin-right: auto; width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+Table 1: NLS Model Results
+</caption>
 <thead>
 <tr>
 <th style="text-align:left;">
@@ -373,7 +377,7 @@ palmetto_rmse &lt;- rmse(palmetto_nls, data = palmetto)</code></pre>
 <div id="filtering-for-male-western-whiptail-lizard-cnemidophorus-tigrisatus" class="section level2">
 <h2>3. Filtering for male Western Whiptail lizard (Cnemidophorus tigrisatus)</h2>
 <ul>
-<li>Filtering for variables of interest, transforming to lof weight and sv_length</li>
+<li>Filtering for variables of interest, transforming to log weight and sv_length</li>
 <li>Fit NLS Model</li>
 </ul>
 <pre class="r"><code>whiptail &lt;- palmetto %&gt;% 
@@ -417,12 +421,12 @@ whiptail_model_clean &lt;- tidy(whiptail_model)</code></pre>
 whiptail_nls_tidy &lt;- tidy(whiptail_nls)</code></pre>
 <pre class="r"><code>#Making a table with outputs
 whiptail_nls_tidy %&gt;%
-  kable(col.names = c(&quot;Term&quot;, &quot;Coefficient&quot;, &quot;Standard Error&quot;, &quot;Statistic&quot;, &quot;P Value&quot;), digits = 4, caption = &quot;Table 1: NLS Model Results&quot;) %&gt;% 
+  kable(col.names = c(&quot;Term&quot;, &quot;Coefficient&quot;, &quot;Standard Error&quot;, &quot;Statistic&quot;, &quot;P Value&quot;), digits = 4, caption = &quot;Table 2: NLS Model Results&quot;) %&gt;% 
   kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;)) %&gt;% 
   kable_styling(full_width = FALSE)</code></pre>
 <table class="table table-striped table-hover table" style="margin-left: auto; margin-right: auto; width: auto !important; margin-left: auto; margin-right: auto;">
 <caption>
-Table 1: NLS Model Results
+Table 2: NLS Model Results
 </caption>
 <thead>
 <tr>
