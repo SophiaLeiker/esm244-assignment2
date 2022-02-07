@@ -317,7 +317,7 @@ final_table <- tidy(final_model) %>%
   rename("Term" = "term")
 
 final_table %>% 
-  kbl() %>% 
+  kbl(digits = 3) %>% 
   kable_styling(bootstrap_options = c("striped", "hover"))
 ```
 
@@ -340,7 +340,7 @@ blr_fitted <- final_model %>%
 #creating a function
 pred_acc <- function(x, y) {
   accurate <- ifelse(x == y, 1, 0)
-  return(mean(accurate, na.rm = TRUE))
+  return(accurate)
 }
 
 #final_model Serenoa repend (orange) vs Sabtal etonia (blue)
@@ -355,7 +355,14 @@ model_success <- palmetto_clean2 %>%
                               TRUE ~ "Incorrect"))
 
 model_success %>%
-  summarize(model_success = mean(accurate))
+  group_by(species) %>% 
+  summarize(model_success = mean(accurate)) %>% 
+  summarize(m)
+#total observations is the n() (since it is after the group function it is already parsed out)
+#correctly classified is total
+#correct 
+
+
 ```
 
 ```{r}

@@ -24,7 +24,7 @@ library(kableExtra)
 library(modelr)
 ```
 
-## 1. Introduction
+## Introduction
 
 This report will employ non linear least squares to estimate parameters of a length to weight model for lizard populations in New Mexico. To do this the  snout length to weight model will be used. 
 
@@ -147,7 +147,8 @@ ggplot() +
             y = .fitted,
             color = "Model Predictions"),
             size = 0.5) +
-  theme(legend.title = element_blank()) 
+  theme(legend.title = element_blank()) +
+  scale_color_manual(values = c("mediumvioletred", "blue", "limegreen"))
   
 
 ```
@@ -164,20 +165,26 @@ palmetto_rmse <- rmse(palmetto_nls, data = palmetto)
 
 ***
 
-## 3. Filtering for male Western Whiptail lizard (Cnemidophorus tigrisatus) - Fit NLS Model
+## 3. Filtering for male Western Whiptail lizard (Cnemidophorus tigrisatus) 
+
+- Filtering for variables of interest, transforming to lof weight and sv_length
+- Fit NLS Model
 
 ```{r}
 whiptail <- palmetto %>% 
   filter(spp == "CNTI") %>% 
-  filter(sex == "Male") %>% 
+  filter(sex == "M") %>% 
   mutate(log_weight = log(weight)) %>% 
-  mutate(log_length = log(sv_length))
+  mutate(log_length = log(sv_length)) %>% 
+  drop_na()
 ```
 
 ### A. Running Linear Model
+
 ```{r}
-whiptail_model <- lm(log_weight ~ log_length, data = whiptail) 
+whiptail_model <- lm(log_weight ~ log_length, data = whiptail)
 ```
+
 
 ### B. Supplying NLS Start list with regression coefficients
 
@@ -234,10 +241,18 @@ whiptail_augment <- whiptail_nls %>%
 
 
 ```{r}
+#data.frame to combine palmetto_augment with the palmetto data set
+new_dataframe <- data.frame(palmetto_augment, palmetto) %>% 
+  filter(spp == "CNTI") %>% 
+  filter(sex == "M")
+```
+
+
+```{r}
 #Plotting female and male lizards separated by color
 
 ggplot() +
-  geom_point(data = palmetto, aes(x=sv_length, y = weight, color = sex)) +
+  geom_point(data = whiptail, aes(x=sv_length, y = weight)) +
   labs(title = "Male Whiptail NLS Model Predictionsfor Snout to vent length (mm) vs Weight (g)", 
        subtitle = "Data From: Lightfoot, D. and W.G. Whitford. 2020",
        x = "Snout to vent length (mm)", y = "Weight (g)") +
@@ -248,30 +263,27 @@ ggplot() +
             color = "Male Whiptail Model Predictions"),
             size = 0.5) +
   theme(legend.title = element_blank()) +
-  geom_line(data = palmetto_augment, aes(
+  geom_line(data = new_dataframe, aes(
             x = sv_length,
             y = .fitted,
             color = "Full Dataset Model Predictions"),
-            size = 0.5)
-  
+            size = 0.5) +
+  scale_color_manual(values = c("mediumvioletred", "forestgreen"))
+
+
 
 ```
-
-**Figure 2**: Male Whiptail NLS Model Prediction Results for Snout to vent length (mm) vs Weight (g) with colors representing Male (M) and female (F) lizards. The points represent individual data points from the dataset, the blue line represents the model predictions. 
 
 ```{r}
 #Calculating RMSE
-
 whiptail_rmse <- rmse(whiptail_nls, data = whiptail)
 ```
 
-**RMSE** The RMSE for the NLS Model run on male whiptail points is `r round(whiptail_rmse,3)`
-
-## 4. RMSE Comparisons and Model Takeaways
+**Figure 2**: Male Whiptail NLS Model Prediction Results for Snout to vent length (mm) vs Weight (g). The points represent individual data points from the dataset, the purple line represents the model predictions for wight based on NLS run on the full dataset, the green line represents the model predictions based on the NLS model trained with just the Male Whiptails. The RMSE for the NLS model trained on the full model is `r round(palmetto_rmse,3)`. The RMSE for the NLS Model run on male whiptail points is `r round(whiptail_rmse,3)`. For this reason, the model that should be used is the NLS model run on the full dataset. 
 
 
 
-## X. Data Citation
+## 4. Data Citation
 
 Lightfoot, D. and W.G. Whitford. 2020. Lizard pitfall trap data from 11 NPP study locations at the Jornada Basin LTER site, 1989-2006 ver 37. Environmental Data Initiative. https://doi.org/10.6073/pasta/4a6e258fb49c31e222ecbbcfd128967f
 
