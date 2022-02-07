@@ -41,7 +41,7 @@ palmetto <- read_csv(here("data", "lizard.csv")) %>%
   clean_names() %>% 
   drop_na() 
   
-
+#palmetto naming convention was wrong, too far into the code to change when this was realized
 ```
 
 ***
@@ -148,12 +148,12 @@ ggplot() +
             color = "Model Predictions"),
             size = 0.5) +
   theme(legend.title = element_blank()) +
-  scale_color_manual(values = c("mediumvioletred", "blue", "limegreen"))
+  scale_color_manual(values = c("seagreen3", "mediumblue", "mediumvioletred"))
   
 
 ```
 
-**Figure 1**: NLS Model Prediction Results for Snout to vent length (mm) vs Weight (g) with colors representing Male (M) and female (F) lizards. The points represent individual data points from the dataset, the blue line represents the model predictions. 
+**Figure 1**: NLS Model Prediction Results for Snout to vent length (mm) vs Weight (g) with colors representing Male (M) and female (F) lizards. The points represent individual data points from the dataset, the purple line represents the model predictions. 
 
 ```{r}
 #Calculating RMSE
@@ -167,7 +167,7 @@ palmetto_rmse <- rmse(palmetto_nls, data = palmetto)
 
 ## 3. Filtering for male Western Whiptail lizard (Cnemidophorus tigrisatus) 
 
-- Filtering for variables of interest, transforming to lof weight and sv_length
+- Filtering for variables of interest, transforming to log weight and sv_length
 - Fit NLS Model
 
 ```{r}
@@ -221,11 +221,10 @@ whiptail_nls_tidy <- tidy(whiptail_nls)
 ```
 
 
-**Table 1**: NLS Model Results
 ```{r}
 #Making a table with outputs
 whiptail_nls_tidy %>%
-  kable(col.names = c("Term", "Coefficient", "Standard Error", "Statistic", "P Value"), digits = 4) %>% 
+  kable(col.names = c("Term", "Coefficient", "Standard Error", "Statistic", "P Value"), digits = 4, caption = "Table 1: NLS Model Results") %>% 
   kable_styling(bootstrap_options = c("striped", "hover")) %>% 
   kable_styling(full_width = FALSE)
   
@@ -279,11 +278,12 @@ ggplot() +
 whiptail_rmse <- rmse(whiptail_nls, data = whiptail)
 ```
 
-**Figure 2**: Male Whiptail NLS Model Prediction Results for Snout to vent length (mm) vs Weight (g). The points represent individual data points from the dataset, the purple line represents the model predictions for wight based on NLS run on the full dataset, the green line represents the model predictions based on the NLS model trained with just the Male Whiptails. The RMSE for the NLS model trained on the full model is `r round(palmetto_rmse,3)`. The RMSE for the NLS Model run on male whiptail points is `r round(whiptail_rmse,3)`. For this reason, the model that should be used is the NLS model run on the full dataset. 
+**Figure 2**: Male Whiptail NLS Model Prediction Results for Snout to vent length (mm) vs Weight (g). The points represent individual data points from the dataset, the purple line represents the model predictions for weight based on the NLS run on the full dataset, the green line represents the model predictions based on the NLS model trained with just the Male Whiptails. The RMSE for the NLS model trained on the full model is `r round(palmetto_rmse,3)`. The RMSE for the NLS Model run on male whiptail points is `r round(whiptail_rmse,3)`. For this reason, the model that should be used is the **NLS model run on the full dataset** (purple line). 
 
-
+***
 
 ## 4. Data Citation
 
 Lightfoot, D. and W.G. Whitford. 2020. Lizard pitfall trap data from 11 NPP study locations at the Jornada Basin LTER site, 1989-2006 ver 37. Environmental Data Initiative. https://doi.org/10.6073/pasta/4a6e258fb49c31e222ecbbcfd128967f
 
+## END TASK
