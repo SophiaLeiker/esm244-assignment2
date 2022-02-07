@@ -279,9 +279,10 @@ ggplot() +
 ```{r}
 #Calculating RMSE
 whiptail_rmse <- rmse(whiptail_nls, data = whiptail)
+total_rmse <- rmse(palmetto_nls, data = whiptail)
 ```
 
-**Figure 2**: Male Whiptail NLS Model Prediction Results for Snout to vent length (mm) vs Weight (g). The points represent individual data points from the dataset, the purple line represents the model predictions for weight based on the NLS run on the full dataset, the green line represents the model predictions based on the NLS model trained with just the Male Whiptails. The RMSE for the NLS model trained on the full dataset is `r round(palmetto_rmse,3)`. The RMSE for the NLS Model run on male whiptail points is `r round(whiptail_rmse,3)`. By comparing the RMSE values it can be seen that the RMSE higher for the NLS model run on the Male Whiptail dataset, thus the model that should be used is the **NLS model run on the full dataset** (purple line). 
+**Figure 2**: Male Whiptail NLS Model Prediction Results for Snout to vent length (mm) vs Weight (g). The points represent individual data points from the dataset, the purple line represents the model predictions for weight based on the NLS run on the full dataset, the green line represents the model predictions based on the NLS model trained with just the Male Whiptails. The RMSE for the NLS model trained on the full dataset is `r round(total_rmse,3)`. The RMSE for the NLS Model run on male whiptail points is `r round(whiptail_rmse,3)`. By comparing the RMSE values it can be seen that the RMSE higher for the NLS model trained on the full dataset, **thus the model that should be used is the Male Whiptail Model** (green line). Visually, this can also be seen in the model prediction lines as the green line seems to better capture the trends in the datapoints. 
 
 ***
 
